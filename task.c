@@ -19,24 +19,9 @@
 #include "task.h"
 
  
- 
- 
  /* task scheduler declarations: */
 uint8_t tick_event;
 task_t * task_list;
-
-#if 0
-task_t tasks[TASK_AMOUNT] = {
-							  	  {1, 0, 0, NEW, task_1ms}, 		// every 1ms
-								  {5, 0, 0, NEW, task_5ms},			// every 5ms
-								  {10,0,0, NEW, task_10ms}, 	 	// every 10ms
-								  {30,0,0, NEW, task_30ms},			// every 20ms
-								  {100,0,0, NEW, task_100ms},   	// every 100ms
-								  {1000,0,0, NEW, task_1000ms} 		// every 1000ms
-							  };
-#endif
-
-
 
 
 /*!
