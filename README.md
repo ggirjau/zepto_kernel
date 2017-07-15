@@ -4,6 +4,7 @@ Only for self improvement and deep learning of a real time kernel programming, Z
 The project is on build state, so there are a lot of TODO to be implemented.
 
 Concept:
+
     * Max 21 task supported, stored in an array of pointers to task_t structure.
     * Priorities for tasks.
     * (MASTER priority) Tasks may have only one CHILD task with a predefined SLAVE priority.
