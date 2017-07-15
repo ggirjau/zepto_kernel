@@ -27,6 +27,13 @@
  */
  
 /*!
+ * @brief       Clear task_list structure, to avoid garbage.
+ * @param[in]   none.
+ * @return      none.
+ */
+ void clear_task_list (void);
+ 
+/*!
  * @brief       Call all init functions into this fuction.
  * @param[in]   none.
  * @return      status of type os_status_t.

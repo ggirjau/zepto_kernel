@@ -16,19 +16,22 @@
   */
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include "stm32f7xx_hal.h"
 #include "task.h"
 
 
  
- 
- 
-/* task scheduler declarations: */
+/* os tick event, each 1ms */
 uint8_t tick_event;
+/* global struct with all os tasks created */
 task_t * task_list[ZEPTO_N_TASKS];
 
 
-
+/*!
+ * @Functions:
+ */
+ 
 /*!
  * @brief:		Alloc memory for new task. calloc() used                                    
  *
@@ -55,10 +58,11 @@ os_status_t task_alloc (task_t * new_task[], uint8_t task_cnt)
  *
  * @param[in]:	task name.
  * @param[in]:	running time of a task in ms.
+ * @param[in]:	task priority.
  * @param[in]:	callback to the new task function.                            
  * @return: 	status of task creation.
  **/
-os_status_t create_task (char * task_name, uint16_t running_time, void (*callback))
+os_status_t create_task (char * task_name, os_kernel_priority_t task_priority, uint16_t running_time, void (*callback))
 {
     static uint8_t task_cnt = 0;
     
@@ -70,12 +74,77 @@ os_status_t create_task (char * task_name, uint16_t running_time, void (*callbac
     {
         task_list[task_cnt]->task_name = task_name;
         task_list[task_cnt]->running_time = running_time;
+        task_list[task_cnt]->priority = task_priority;
         task_list[task_cnt]->func_p = callback;
+        task_list[task_cnt]->state = NEW;
     
         task_cnt++; // task has been alocated, increment task_cnt to next task.
     }
     
     return OS_SUCCESS;
+}
+
+/*!
+ * @brief:		Create child task, of a task_t * parent_task. calloc() is used to alloc mem for child task.
+ *              Parent task should have MASTER PRIORITY to afford child creation.                            
+ *
+ * @param[in]:	parent task.
+ * @param[in]:	task_name string.
+ * @param[in]:	running time of a task in ms.
+ * @param[in]:	callback to the new task function.                            
+ * @return: 	status of task creation.
+ **/
+os_status_t create_child_task (task_t * parent_task, char * task_name, uint16_t running_time, void (*callback))
+{
+    /*  ONLY TASKS WITH MASTER PRIORITY MAY HAVE CHILD TASK.
+     *  Check if parent priority is MASTER_PRI... else reject child mem alocation and return PRIORITY_ERR, 
+     */
+    if (parent_task->priority == OS_MASTER_PRIORITY)
+    {
+        parent_task->child_task = calloc(1, sizeof(task_t));
+        
+        if(parent_task->child_task == NULL)                     
+        {
+            printf("Error! memory not allocated for task %s,",task_name);
+            return OS_ERR_NO_MEM;
+        }
+        
+        parent_task->child_task->task_name = task_name;
+        parent_task->child_task->running_time = running_time;
+        parent_task->child_task->priority = OS_SLAVE_PRIORITY;
+        parent_task->child_task->func_p = callback;
+        parent_task->child_task->state = NEW;
+    }
+    else
+    {
+        return OS_ERR_PRIORITY;
+    }        
+    
+}
+
+/*!
+ * @brief:      Delete task through checking of given task name in task_list.
+ *                                         
+ * @param[in]:  task_name string.              
+ * @return:     status of deletion.
+ **/
+os_status_t delete_task (char * task_name)
+{
+    uint8_t task_cnt = 0;
+    
+    /*  cycle until no pointer to heap found (task_list[task_cnt] != 0) */
+	for (task_cnt = 0; task_list[task_cnt] != 0; task_cnt++)
+	{
+        // Init task timer with offset + running_time value.
+		if (strcmp(task_list[task_cnt]->task_name, task_name) == TASK_MATCH)
+        {
+            // Task match.
+            free(task_list[task_cnt]);
+            return OS_SUCCESS;
+        }
+	}
+    
+    return OS_NO_TASK_FOUND;
 }
                               
 /*!
@@ -88,8 +157,10 @@ void init_scheduler (void)
 {
 	uint8_t task_cnt;
 
-	for (task_cnt = 0; task_list[task_cnt]->running_time != 0; task_cnt++)
+    /*  cycle until no pointer to heap found (task_list[task_cnt] != 0) */
+	for (task_cnt = 0; task_list[task_cnt] != 0; task_cnt++)
 	{
+        // Init task timer with offset + running_time value.
 		task_list[task_cnt]->timer = task_list[task_cnt]->offset + task_list[task_cnt]->running_time;
 	}
 }
@@ -106,12 +177,15 @@ void start_kernel (void)
 
 	if(tick_event == PEND_SWITCH_CONTEXT)
 	{
-		for(task_cnt = 0; task_list[task_cnt]->running_time != 0; task_cnt++)
+        /*  cycle until no pointer to heap found (task_list[task_cnt] != 0) */
+		for(task_cnt = 0; task_list[task_cnt] != 0; task_cnt++)
 		{
+            // timer value of task has been decremented to 0, task is running state.
 			if(task_list[task_cnt]->state == RUNNING)
 			{
 				task_list[task_cnt]->func_p();
-				task_list[task_cnt]->state = DEAD;
+                // ste task to dead state to avoid multiple execution in time.
+				task_list[task_cnt]->state = DEAD;  
 			}
 		}
 
@@ -138,9 +212,9 @@ void update_timer_task(void)
 {
 	uint8_t task_cnt;
 
-	for(task_cnt = 0; task_list[task_cnt]->running_time != 0; task_cnt++)
+	for(task_cnt = 0; task_list[task_cnt] != 0; task_cnt++)
 	{
-        /*  Task has been executed. Switch to other task, pending switch context */
+        /*  timer value of task has been decremented. Set task to running state. Pend switch context */
 		if(task_list[task_cnt]->timer == 0)
 		{
 			task_list[task_cnt]->state = RUNNING;

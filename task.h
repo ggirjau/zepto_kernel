@@ -28,7 +28,7 @@
 #define GET_N_ELEMENT_OF(a)     (sizeof(a) / sizeof(*a))
 #define PEND_SWITCH_CONTEXT     (1)
 #define CLEAR_SWITCH_CONTEXT    (0)
- 
+#define TASK_MATCH              (0) 
  
  
  /*
@@ -55,7 +55,7 @@ struct task_node
     task_state_t state;                 // NEW, RUNNING...
     void (*func_p)();                   // call back of a new task.
     
-    struct task_node * task_child;      // create a task child.
+    struct task_node * child_task;      // create a task child.
 };
  
 typedef struct task_node task_t;
@@ -69,11 +69,33 @@ typedef struct task_node task_t;
  * @brief:		Create task, add new task params to task_t task_list structure used in scheduler.
  *              Index task_list structure with static task_cnt which should be incremented at each new_task creation.                           
  *
+ * @param[in]:	task name.
+ * @param[in]:	running time of a task in ms.
+ * @param[in]:	task priority.
+ * @param[in]:	callback to the new task function.                            
+ * @return: 	status of task creation.
+ **/
+os_status_t create_task (char * task_name, os_kernel_priority_t task_priority, uint16_t running_time, void (*callback));
+
+/*!
+ * @brief:		Create child task, of a task_t * parent_task. calloc() is used to alloc mem for child task.
+ *              Parent task should have MASTER PRIORITY to afford child creation.                            
+ *
+ * @param[in]:	parent task.
+ * @param[in]:	task_name string.
  * @param[in]:	running time of a task in ms.
  * @param[in]:	callback to the new task function.                            
- * @return: 	none
+ * @return: 	status of task creation.
  **/
-os_status_t create_task (char * task_name, uint16_t running_time, void (*callback));
+os_status_t create_child_task (task_t * parent_task, char * task_name, uint16_t running_time, void (*callback));
+
+/*!
+ * @brief:      Delete task through checking of given task name in task_list.
+ *                                         
+ * @param[in]:	task_name string.              
+ * @return: 	status of deletion.
+ **/
+os_status_t delete_task (char * task_name);
 
 /*!
  * @brief:		Init Scheduler. 

@@ -20,10 +20,10 @@
 /*!
  * @Defines
  */
-#define FALSE                       (0)
-#define TRUE                        (!FALSE)
+#define FALSE                           (0)
+#define TRUE                            (!FALSE)
  
-#define CHANGE_DEFAULT_TICK_CFG      (TRUE)
+#define CHANGE_DEFAULT_TICK_CFG         (TRUE)
  
 /*
  * System kernel Priorities used for thread control.
@@ -51,8 +51,9 @@ typedef enum
     OS_SUCCESS          = 0,    // function completed; no error or event occurred.
     OS_ERROR            = 1,    // unspecified run-time kernel os error.   
     OS_ERR_PRIORITY     = 0x55, // system cannot determine priority or thread has illegal priority.
-    OS_EVENT_TIMEOUT    = 0x20, // function completed; timeout occurred.
-    OS_ERR_NO_MEM       = 0x21, // system is out of memory: it was impossible to allocate or reserve memory for the operation.
+    OS_EVENT_TIMEOUT    = 0x40, // function completed; timeout occurred.
+    OS_ERR_NO_MEM       = 0x41, // system is out of memory: it was impossible to allocate or reserve memory for the operation.
+    OS_NO_TASK_FOUND    = 0x42, // no task found, or task incorrect name
 } os_status_t;
 
 #endif // END OF KERNEL_SYS_CFG HEADER FILE
