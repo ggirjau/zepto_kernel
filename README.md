@@ -3,6 +3,15 @@ Zepto Kernel
 Only for self improvement and deep learning of a real time kernel programming, Zeprto Kernel -  a minimal kernel ower cortex m7 MCU
 The project is on build state, so there are a lot of TODO to be implemented.
 
+Concept:
+    * Max 21 task supported, stored in an array of pointers to task_t structure.
+    * Priorities for tasks.
+    * (MASTER priority) Tasks may have only one CHILD task with a predefined SLAVE priority.
+    * (Master - Slave) priority for parent - child tasks.  
+
+The main purpose of this project is to build a minimal RTOS kernel with maximum supported 21 tasks: Tasks are stored in an array of pointers to task_t structure: task_t * task_list[ZEPTO_N_TASKS];
+Only Master priority Tasks may have cild task. 
+
 Getting Started
 
 Generate a clean project in Cube Mx or create arm project in any other tools.
