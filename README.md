@@ -1,6 +1,6 @@
 Zepto Kernel
 
-Only for self improvement and deep learning of a real time kernel programming, Zeprto Kernel -  a minimal kernel ower cortex m7 MCU
+Only for self improvement and deep learning of a real time kernel programming, Zeprto Kernel -  a minimal kernel over cortex m7 MCU
 The project is on build state, so there are a lot of TODO to be implemented.
 
 Concept:
